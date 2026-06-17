@@ -1,0 +1,36 @@
+name: Daily News Digest
+
+on:
+  schedule:
+    # 02:00 UTC = 10:00 Asia/Taipei
+    - cron: '0 2 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate news digest
+        run: npm run news:digest -- > digest.md
+
+      - name: Create issue with digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="每日國際新聞摘要 - $(TZ=Asia/Taipei date +'%Y-%m-%d')"
+          gh issue create --title "$TITLE" --body-file digest.md --repo "$GITHUB_REPOSITORY"
