@@ -26,7 +26,7 @@ jobs:
         run: npm ci
 
       - name: Generate news digest
-        run: npm run news:digest -- > digest.md
+        run: node scripts/daily-news-digest.mjs > digest.md
 
       - name: Create issue with digest
         env:
